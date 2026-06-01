@@ -3,440 +3,719 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المايسترو - تصميم داخلي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <title>كويز تفاعلي - صيانة الآلات</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        /* Screens Management */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .welcome-screen p {
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        /* Quiz Screen */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #888;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            text-align: left;
+            line-height: 1.5;
+            direction: ltr;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .option-btn {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+            transform: translateX(5px);
+        }
+
+        /* Status Styles */
+        .option-btn.correct {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-color) !important;
+            color: white;
+            animation: pulse 0.4s ease;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error-color) !important;
+            border-color: var(--error-color) !important;
+            color: white;
+        }
+
+        /* Global Button */
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+        }
+
+        /* Results Screen */
+        .result-screen h2 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .score-text {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDqOrmezQTENN0VKMOQ7BMiLgWnZj-wgm0",
-    authDomain: "maestrooooo.firebaseapp.com",
-    projectId: "maestrooooo",
-    storageBucket: "maestrooooo.firebasestorage.app",
-    messagingSenderId: "913836569282",
-    appId: "1:913836569282:web:2d8c17c1c349dcc021015b"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // نخليه global عشان نستخدمه في ملفك
-  window.db = db;
-  window.addDoc = addDoc;
-  window.collection = collection;
-</script>
 <body>
-    <!-- Background Shapes -->
-    <div class="bg-shape bg-shape-1"></div>
-    <div class="bg-shape bg-shape-2"></div>
 
-    <div class="min-h-screen flex flex-col relative overflow-hidden">
-        <!-- Header / Hero Section -->
-        <header class="pt-16 pb-12 px-6 text-center">
-            <div class="max-w-3xl mx-auto space-y-6">
-                <div class="badge">
-                    <span>DESIGN & BUILD</span>
-                </div>
-                
-                <!-- Hero Title مع الصور -->
-                <div class="hero-with-images">
-                    <!-- الصورة المربعة على الشمال -->
-                    <div class="hero-image square-image">
-                        <img src="images/image3.jpg" alt="صورة مربعة">
-                    </div>
-
-                    <!-- النص في المنتصف -->
-                    <div class="hero-text-wrapper">
-                        <h1 class="hero-title">
-                            الأناقة في كل <span class="text-gradient-gold">تفصيلة</span>
-                        </h1>
-                    </div>
-
-                    <!-- الصورة المستطيلة على اليمين -->
-                    <div class="hero-image rectangle-image">
-                        <img src="images/image4.jpg" alt="صورة مستطيلة">
-                    </div>
-                </div>
-                
-                <p class="hero-description">
-                    نحن هنا لنحول مساحتك إلى تحفة فنية تعكس ذوقك الخاص. دعنا نساعدك في تصميم وتشطيب شقتك بأعلى معايير الجودة والاحترافية.
-                </p>
-            </div>
-
-            <!-- Feature Icons -->
-            <div class="features-grid">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/>
-                        </svg>
-                    </div>
-                    <span>تصميم دقيق</span>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/>
-                        </svg>
-                    </div>
-                    <span>تشطيب راقي</span>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                        </svg>
-                    </div>
-                    <span>تسليم على المفتاح</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content Form -->
-        <main class="flex-1 px-4 pb-24">
-            <section class="survey-section glass-card" id="survey">
-                <div class="survey-header">
-                    <h2 class="survey-title">
-                        ابدأ رحلة <span class="text-gradient-gold">تشطيب شقتك</span>
-                    </h2>
-                    <p class="survey-subtitle">يرجى تعبئة البيانات التالية بدقة لنتمكن من تقديم أفضل عرض سعر وتصميم يناسب تطلعاتك.</p>
-                </div>
-                
-                <form id="surveyForm" class="form-grid">
-                    <!-- Row 1 -->
-                    <div class="form-group">
-                        <label for="name">اسم العميل</label>
-                        <input type="text" id="name" name="clientName" placeholder="الاسم الثلاثي" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">رقم الهاتف</label>
-                        <input type="tel" id="phone" name="phoneNumber" placeholder="رقم للتواصل (يفضل واتساب)" dir="ltr" required>
-                    </div>
-
-                   
-<!-- حطه بعد رقم الهاتف مباشرة -->
-<div class="form-group full">
-    <label for="how">كيف تعرفت على خدمتنا؟</label>
-    <select id="how" name="how" required>
-        <option value="">اختر المصدر</option>
-        <option value="عبر الفيسبوك">عبر الفيسبوك</option>
-        <option value="عبر الصالح جروب">عبر الصالح جروب</option>
-    </select>
-</div>
-
-
-                    
-                    <!-- Row 2 -->
-                    <div class="form-group">
-                        <label for="location">المكان</label>
-                        <select id="location" name="locationType" required>
-                            <option value="">اختر نوع المكان</option>
-                            <option value="كومباوند">كومباوند</option>
-                            <option value="عمائر منفصلة">عمائر منفصلة</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="area">المنطقة</label>
-                        <input type="text" id="area" name="area" placeholder="مثال: التجمع الخامس، زايد..." required>
-                    </div>
-
-
-
-                    <div class="form-group">
-    <label for="unit-area">مساحة الوحدة (متر مربع)</label>
-    <input type="number" id="unit-area" name="unitArea" placeholder="مثال: 150" required>
-</div>
-<div class="form-group">
-    <label for="apartment">حالة الشقة الحالية</label>
-    <select id="apartment" name="apartmentState" required>
-        <option value="">اختر حالة الشقة</option>
-        <option value="محارة">محارة</option>
-        <option value="طوب أحمر">طوب أحمر</option>
-    </select>
-</div>
-
-<div class="form-group full">
-    <label for="paint-type">نوع الأصباغ (الدهانات) المفضل</label>
-    <select id="paint-type" name="paintType" required>
-        <option value="">اختر ماركة الدهان</option>
-        <option value="جوتن">جوتن (Jotun)</option>
-        <option value="GLC">جي إل سي (GLC)</option>
-        <option value="سايبس">سايبس (Sipes)</option>
-        <option value="سكيب">سكيب (Scib)</option>
-        <option value="أخرى">ماركة أخرى</option>
-    </select>
-</div>
-
-                    <!-- Row 3 -->
-                    <div class="form-group">
-                        <label for="floor">الدور</label>
-                        <input type="text" id="floor" name="floor" placeholder="رقم الدور" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="apartment">حالة الشقة الحالية</label>
-                        
-                            <option value="">اختر حالة الشقة</option>
-                            <option value="محارة">محارة</option>
-                            <option value="طوب أحمر">طوب أحمر</option>
-                        </select>
-                    </div>
-
-                    <!-- Row 4 -->
-                    <div class="form-group">
-                        <label for="designType">نوع التصميم المطلوب</label>
-                        <select id="designType" name="designType" required>
-                            <option value="">اختر نوع التصميم</option>
-                            <option value="فندقي">فندقي</option>
-                            <option value="مودرن">مودرن</option>
-                            <option value="ستيل">ستيل</option>
-                            <option value="كلاسيك">كلاسيك</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="floor-type">نوع الأرضيات</label>
-                        <select id="floor-type" name="flooring" required>
-                            <option value="">اختر نوع الأرضيات</option>
-                            <option value="بورسلين">بورسلين</option>
-                            <option value="سيراميك">سيراميك</option>
-                            <option value="HDF">HDF</option>
-                        </select>
-                    </div>
-
-                    <!-- Row 5 -->
-                    <div class="form-group full">
-                        <label for="designs-available">هل متوافر مع العميل تصميمات 2D أو 3D؟</label>
-                        <select id="designs-available" name="designsAvailable" required>
-                            <option value="">اختر الخيار</option>
-                            <option value="نعم">نعم</option>
-                            <option value="لا">لا</option>
-                        </select>
-                    </div>
-
-                    <!-- Row 6 -->
-                    <div class="form-group">
-                        <label for="electricity">تأسيس الكهرباء</label>
-                        <select id="electricity" name="electricity" required>
-                            <option value="">اختر نظام الكهرباء</option>
-                            <option value="سمارت">نظام سمارت (Smart Home)</option>
-                            <option value="عادية">كهرباء عادية</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="plumbing">تأسيس السباكة</label>
-                        <select id="plumbing" name="plumbing" required>
-                            <option value="">اختر نظام السباكة</option>
-                            <option value="دفن">دفن (مخفي)</option>
-                            <option value="عادية">عادية</option>
-                        </select>
-                    </div>
-
-                    <!-- Row 7 -->
-                    <div class="form-group full">
-                        <label for="customer-location">مكان إقامة العميل الحالي</label>
-                        <select id="customer-location" name="clientLocation" required>
-                            <option value="">اختر مكان الإقامة</option>
-                            <option value="داخل مصر">داخل مصر</option>
-                            <option value="خارج مصر">خارج مصر</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="submit-btn full">📱 إرسال عبر واتساب</button>
-                </form>
-            </section>
-
-            <!-- Portfolio Section - Horizontal Scroll -->
-            <section class="portfolio-section" id="portfolio">
-                <h2 class="section-title">جزء من تصميماتنا الحديثة</h2>
-                <div class="portfolio-wrapper">
-                    <div class="portfolio-scroll" id="portfolioGrid">
-                        <div class="portfolio-item">
-                                        <img src="images/portfolio1.jpg" alt="عميل 1">
-                        </div>
-                        <div class="testimonial-item">
-                            <img src="images/portfolio2.jpg" alt="عميل 2">
-                        </div>
-                        <div class="testimonial-item">
-                            <img src="images/portfolio3.jpg" alt="عميل 3">
-                        </div>
-                         <!-- الصورة 1 -->
-                        <div class="testimonial-item">
-                            <img src="images/portfolio4.jpg" alt="عميل 1">
-                        </div>
-                         <!-- الصورة 1 -->
-            <div class="testimonial-item">
-                <img src="images/portfolio5.jpg" alt="عميل 1">
-            </div>
-                         <!-- الصورة 1 -->
-            <div class="testimonial-item">
-                <img src="images/portfolio6.jpg" alt="عميل 1">
-            </div>
-                         <!-- الصورة 1 -->
-            <div class="testimonial-item">
-                <img src="images/portfolio6.jpg" alt="عميل 1">
-            </div>
-                        v
-                         <!-- الصورة 1 -->
-            <div class="testimonial-item">
-                <img src="images/portfolio7.jpg" alt="عميل 1">
-            </div>
-                          <!-- الصورة 1 -->
-            <div class="testimonial-item">
-                <img src="images/portfolio8.jpg" alt="عميل 1">
-            </div>
-                          <!-- الصورة 1 -->
-            <div class="testimonial-item">
-                <img src="images/portfolio9.jpg" alt="عميل 1">
-            </div>
-                          <!-- الصورة 1 -->
-            <div class="testimonial-item">
-                <img src="images/portfolio10.jpg" alt="عميل 1">
-            </div>
-                        
-                        <div class="testimonial-item">
-                            <img src="images/portfolio11.jpg" alt="عميل 4">
-                        </div>
-                        <div class="testimonial-item">
-                            <img src="images/portfolio12.jpg" alt="عميل 5">
-                        </div>
-                    </div>
-                           
-                
-                    </div>
-                </div>
-            </section>
-
-            <!-- Testimonials Section -->
-
-            <!-- Testimonials Section - 16 صورة -->
-<section class="testimonials-section" id="testimonials">
-    <div class="testimonials-container">
-        <h2 class="section-title">آراء عملائنا</h2>
-        <div class="testimonials-slider" id="testimonialsSlider">
-            <!-- الصورة 1 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials1.jpg" alt="عميل 1">
-            </div>
-            <!-- الصورة 2 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials2.jpg" alt="عميل 2">
-            </div>
-            <!-- الصورة 3 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials3.jpg" alt="عميل 3">
-            </div>
-            <!-- الصورة 4 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials4.jpg" alt="عميل 4">
-            </div>
-            <!-- الصورة 5 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials5.jpg" alt="عميل 5">
-            </div>
-            <!-- الصورة 6 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials6.jpg" alt="عميل 6">
-            </div>
-            <!-- الصورة 7 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials7.jpg" alt="عميل 7">
-            </div>
-            <!-- الصورة 8 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials8.jpg" alt="عميل 8">
-            </div>
-            <!-- الصورة 9 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials9.jpg" alt="عميل 9">
-            </div>
-            <!-- الصورة 10 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials10.jpg" alt="عميل 10">
-            </div>
-            <!-- الصورة 11 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials11.jpg" alt="عميل 11">
-            </div>
-            <!-- الصورة 12 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials12.jpg" alt="عميل 12">
-            </div>
-            <!-- الصورة 13 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials13.jpg" alt="عميل 13">
-            </div>
-            <!-- الصورة 14 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials14.jpg" alt="عميل 14">
-            </div>
-            <!-- الصورة 15 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials15.jpg" alt="عميل 15">
-            </div>
-            <!-- الصورة 16 -->
-            <div class="testimonial-item">
-                <img src="images/testimonials16.jpg" alt="عميل 16">
-            </div>
+    <div class="container fade-in">
+        
+        <div id="welcome-screen" class="screen active">
+            <h1>مرحباً بك في اختبار تقييم الأعطال</h1>
+            <h1>ENG : YOUSSEF WAGEH</h1>
+            <p>اختبر معرفتك في تحديد وفهم أعطال الآلات الصناعية ومدى تأثيرها.</p>
+            <p>   ----    </p>
+            <button class="btn" onclick="startQuiz()">ابدأ الاختبار الآن</button>
         </div>
-        <div class="testimonials-link" style="display: flex; flex-direction: column; gap: 20px;">
-  <a href="https://drive.google.com/file/d/1mnRngO8bwQ6IALEHu9ntm-kaEoAPILcn/view?usp=drivesdk" download>📄 شاهد ملف الأعمال الكامل (PDF)</a>
-  
-</div>
-    </div>
-</section>
 
-            <!-- Categories Section -->
-            <section class="categories-section" id="categories">
-                <h2 class="section-title">تصفح حسب القسم</h2>
-                
-                <div class="categories-buttons">
-                    <button class="category-btn active" data-category="reception">ريسبشن</button>
-                    <button class="category-btn" data-category="master-bedroom">غرف الماستر</button>
-                    <button class="category-btn" data-category="boys-room">غرف الأولاد</button>
-                    <button class="category-btn" data-category="girls-room">غرف البنات</button>
-                    <button class="category-btn" data-category="small-bathroom">حمامات صغيرة فندقية</button>
-                    <button class="category-btn" data-category="large-bathroom">حمامات كبيرة فندقية</button>
-                    <button class="category-btn" data-category="kitchen">مطابخ</button>
-                    <button class="category-btn " data-category="fela-k">فيلا اكتوبر</button>
-                    <button class="category-btn " data-category="fela_3">فيلا االعبور</button>
-                    <button class="category-btn " data-category="garden">جاردن</button>
-                     <button class="category-btn " data-category="bab">مقترحات ابواب فيلال</button>
-                     <button class="category-btn " data-category="gardn">تصميمات جاردن</button>
-                    <button class="category-btn " data-category="srer">تصميمات غ نوم</button>
-                </div>
-
-                <div class="category-gallery" id="categoryGallery">
-                    <!-- سيتم ملء الصور هنا من JavaScript -->
-                </div>
-            </section>
-        </main>
-
-        <!-- زر العودة للاستبيان - معدل -->
-        <button class="scroll-to-survey" id="scrollToSurveyBtn" title="اذهب للاستبيان"></button>
-
-        <!-- Contact -->
-        <section id="contact" class="contact-section">
-            <div class="container contact-card">
-                <h4>تواصل معنا</h4>
-                <p>الهاتف: <a href="tel:01125933005">01121322202</a></p>
-                <p>الهاتف: <a href="tel:01125933005">01289855558</a></p>
-                <div class="socials">
-                    <a href="https://www.instagram.com/almaestro.for.interiordesign?igsh=bXUzazN0bGk0cXFy" target="_blank">إنستاغرام</a>
-                    <a href="https://www.facebook.com/share/1CPJca9bDX/" target="_blank">فيسبوك</a>
-                    <a href="https://www.tiktok.com/@samehyoussry01?_r=1&_t=ZS-94Or2CYEHpw" target="_blank">تيك توك</a>
-                </div>
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-header">
+                <span id="question-number">السؤال 1 من 42</span>
+                <span id="score-counter">النقاط: 0</span>
             </div>
-        </section>
+            <div class="question-text" id="question-text">
+                </div>
+            <div class="options-container" id="options-container">
+                </div>
+        </div>
+
+        <div id="result-screen" class="screen">
+            <h2>اكتمل الاختبار بالكامل!</h2>
+            <div class="score-text" id="final-score">0 / 42</div>
+            <p id="result-feedback" style="margin-bottom: 25px; color: #555;"></p>
+            <button class="btn" onclick="restartQuiz()">إعادة الاختبار</button>
+        </div>
+
     </div>
 
-    <footer class="site-footer">
-        <div class="container">
-            <small><span id="year"></span> — جميع الحقوق محفوظة</small>
-        </div>
-    </footer>
+    <script>
+        // مصفوفة الأسئلة الشاملة كاملة (42 سؤال)
+        const quizData = [
+            {
+                question: "1. Machine failure is formally defined as any event in which a piece of industrial machinery:",
+                options: [
+                    "A) Underperforms, entirely or partially, or stops functioning as intended",
+                    "B) Operates safely at a higher production rate than expected",
+                    "C) Lowers its electricity consumption automatically",
+                    "D) Transitions immediately into a diagnostic calibration loop"
+                ],
+                correct: 0
+            },
+            {
+                question: "2. Which statement is correct regarding the technical scope of \"machine failure\"?",
+                options: [
+                    "A) It only refers to a total catastrophic operational shutdown",
+                    "B) It excludes any minor drop in partial efficiency",
+                    "C) It can encompass differing scenarios and levels of severity",
+                    "D) It represents a single, uniform behavior for all machine models"
+                ],
+                correct: 2
+            },
+            {
+                question: "3. If a machine is running but delivers a degraded output quality that does not meet specification, this is classified as:",
+                options: [
+                    "A) Full preventative success",
+                    "B) Machine failure / underperformance",
+                    "C) Correct diagnostic status",
+                    "D) Predictive optimization"
+                ],
+                correct: 1
+            },
+            {
+                question: "4. Which type of failure happens unexpectedly while the production line is humming along smoothly?",
+                options: [
+                    "A) Gradual Failure",
+                    "B) Intermittent Failure",
+                    "C) Sudden Failure",
+                    "D) Predictive Failure"
+                ],
+                correct: 2
+            },
+            {
+                question: "5. Which of the following examples directly represents a \"Sudden Failure\"?",
+                options: [
+                    "A) A machine tool that shatters or a band that snaps instantly",
+                    "B) A pipe that gradually restricts flow over several months",
+                    "C) A cutting blade that dulls after continuous long-term use",
+                    "D) A moving surface experiencing slow, predictable wear"
+                ],
+                correct: 0
+            },
+            {
+                question: "6. A melted electrical wire that causes an immediate operational halt is categorized under:",
+                options: [
+                    "A) Gradual Failure",
+                    "B) Intermittent Failure",
+                    "C) Sudden Failure",
+                    "D) Scheduled Failure"
+                ],
+                correct: 2
+            },
+            {
+                question: "7. What type of failure comes and goes, acting similarly to a sputtering engine that quits and restarts?",
+                options: [
+                    "A) Sudden Failure",
+                    "B) Intermittent Failure",
+                    "C) Gradual Failure",
+                    "D) Permanent Failure"
+                ],
+                correct: 1
+            },
+            {
+                question: "8. Why are intermittent failures notoriously difficult for maintenance personnel to identify?",
+                options: [
+                    "A) Because they never affect the main control panels",
+                    "B) Because they come and go instead of remaining constant",
+                    "C) Because they only happen when the power is completely off",
+                    "D) Because they cause immediate total destruction of parts"
+                ],
+                correct: 1
+            },
+            {
+                question: "9. Unresolved intermittent failures are usually early warning indicators on their way to causing:",
+                options: [
+                    "A) An extended machine lifespan",
+                    "B) A \"full\" machine failure",
+                    "C) Automatic self-calibration of components",
+                    "D) A drop in operator errors"
+                ],
+                correct: 1
+            },
+            {
+                question: "10. Which type of failure can be tracked over time as an asset's usefulness takes a steady decline?",
+                options: [
+                    "A) Sudden Failure",
+                    "B) Gradual Failure",
+                    "C) Intermittent Failure",
+                    "D) Reactive Failure"
+                ],
+                correct: 1
+            },
+            {
+                question: "11. Which of the following is an example of a gradual equipment failure?",
+                options: [
+                    "A) A structural support beam snapping instantly",
+                    "B) Pipes that eventually clog completely with slow residue buildup",
+                    "C) An electrical fuse blowing out suddenly",
+                    "D) A tool shattering during its first operational load"
+                ],
+                correct: 1
+            },
+            {
+                question: "12. Most gradual failures can be mitigated if maintenance strategies incorporate an understanding of:",
+                options: [
+                    "A) The original color of the machine's external frame",
+                    "B) The expected lifetime of the mechanical parts at hand",
+                    "C) The factory floor plan architecture",
+                    "D) The operator's level of technical education"
+                ],
+                correct: 1
+            },
+            {
+                question: "13. Why are human operators still prone to making errors that lead to machinery failure despite training?",
+                options: [
+                    "A) Because of natural human factors like laziness, tiredness, and plain old forgetfulness",
+                    "B) Because industrial software algorithms are intentionally designed to confuse them",
+                    "C) Because modern factories completely lack safety documentation",
+                    "D) Because high-viscosity lubricants degrade cognitive abilities"
+                ],
+                correct: 0
+            },
+            {
+                question: "14. Accidental damage, such as dropping a piece of sensitive equipment during operation, is categorized as:",
+                options: [
+                    "A) Physical wear and tear",
+                    "B) Simple accident / Operator error",
+                    "C) Maintenance miscalculation",
+                    "D) Diagnostic analytical error"
+                ],
+                correct: 1
+            },
+            {
+                question: "15. Intentional or unintentional misuse and abuse of equipment by machine operators directly results in:",
+                options: [
+                    "A) Decreased capital expenditure",
+                    "B) Premature machine failure",
+                    "C) Enhanced surface degradation resistance",
+                    "D) Elimination of sudden failure modes"
+                ],
+                correct: 1
+            },
+            {
+                question: "16. What can occur if an asset receives excessively frequent or inappropriate maintenance?",
+                options: [
+                    "A) It guarantees 100% operational up-time",
+                    "B) It introduces chaos into the system each time it is touched",
+                    "C) It eliminates all future risks of metal fatigue",
+                    "D) It naturally standardizes the oil's pour point"
+                ],
+                correct: 1
+            },
+            {
+                question: "17. Every time a technician unnecessarily opens up a piece of sensitive industrial machinery:",
+                options: [
+                    "A) There is an immediate software upgrade",
+                    "B) There is potential for introducing risk and failure",
+                    "C) The operator error logs are automatically cleared",
+                    "D) Moving surfaces get automatically polished"
+                ],
+                correct: 1
+            },
+            {
+                question: "18. Which of the following is a direct risk of \"over-maintaining\" mechanical systems?",
+                options: [
+                    "A) Automatically adjusting a digital flow meter",
+                    "B) Breaking a panel, losing a screw, or stripping a bolt",
+                    "C) Permanently preventing chemical corrosion",
+                    "D) Increasing the viscosity index of the internal oil"
+                ],
+                correct: 1
+            },
+            {
+                question: "19. Which of the following failures is directly caused by \"Physical Wear and Tear\"?",
+                options: [
+                    "A) A technician stripping a thread during a routine inspection",
+                    "B) Bearing failure and metal fatigue over an operating period",
+                    "C) An operator forgetting to push the main start button",
+                    "D) Using the wrong software version to calibrate an encoder"
+                ],
+                correct: 1
+            },
+            {
+                question: "20. Structural corrosion and progressive misalignment of moving components are classified under:",
+                options: [
+                    "A) Operator Misconduct",
+                    "B) Physical Wear and Tear",
+                    "C) Excess Maintenance Intervention",
+                    "D) Predictive Algorithm Error"
+                ],
+                correct: 1
+            },
+            {
+                question: "21. \"General surface degradation\" of load-bearing industrial elements is a primary symptom of:",
+                options: [
+                    "A) Proper lubrication selection",
+                    "B) Physical Wear and Tear",
+                    "C) Ideal reactive management paradigms",
+                    "D) Zero human interactions"
+                ],
+                correct: 1
+            },
+            {
+                question: "22. The traditional maintenance strategy summarized by the phrase \"When it breaks, we fix it\" is known as:",
+                options: [
+                    "A) Preventative Maintenance",
+                    "B) Predictive Maintenance",
+                    "C) Reactive Maintenance",
+                    "D) Diagnostic Proactive Strategy"
+                ],
+                correct: 2
+            },
+            {
+                question: "23. What is a defining limitation of the Reactive Maintenance strategy?",
+                options: [
+                    "A) It requires highly expensive IoT sensor arrays to implement",
+                    "B) It does not prevent failure; it only resolves the problem after a malfunction occurs",
+                    "C) It forces technicians to replace perfectly functional parts prematurely",
+                    "D) It depends heavily on calculating part fatigue curves"
+                ],
+                correct: 1
+            },
+            {
+                question: "24. Under a reactive maintenance policy, corrective technical actions are initiated only:",
+                options: [
+                    "A) Several weeks before an expected failure point",
+                    "B) Once the malfunction or breakdown has already occurred",
+                    "C) During scheduled weekly workshop teardowns",
+                    "D) When operators are being trained on equipment usage"
+                ],
+                correct: 1
+            },
+            {
+                question: "25. Which analytical structure deploys historical machine data and root cause analysis to find out why an asset failed?",
+                options: [
+                    "A) Reactive Maintenance",
+                    "B) Diagnostic Analytics",
+                    "C) Basic Lubrication Upgrades",
+                    "D) Sudden Failure Tracking"
+                ],
+                correct: 1
+            },
+            {
+                question: "26. Root cause analysis (RCA) is used within Diagnostic Analytics primarily to discover:",
+                options: [
+                    "A) The global market cost of the industrial asset",
+                    "B) Why the machine failed in the first place",
+                    "C) The names of the shift supervisors present during installation",
+                    "D) The precise flash point of the default grease option"
+                ],
+                correct: 1
+            },
+            {
+                question: "27. Technical data and conclusions gathered from diagnostic analytics are heavily used to refine and feed into:",
+                options: [
+                    "A) A pure breakdown run-to-failure cycle",
+                    "B) A preventative/preventive maintenance strategy",
+                    "C) An operator punishment log book",
+                    "D) A structural machine scrap auction program"
+                ],
+                correct: 1
+            },
+            {
+                question: "28. Scheduled inspections of machinery and replacing parts before their average operational lifespan expires is called:",
+                options: [
+                    "A) Reactive Breakdown Maintenance",
+                    "B) Preventative Maintenance",
+                    "C) Intermittent Error Analysis",
+                    "D) Viscosity Correction Strategy"
+                ],
+                correct: 1
+            },
+            {
+                question: "29. Preemptively replacing a vehicle's engine oil every 5,000 kilometers is an everyday example of:",
+                options: [
+                    "A) Breakdown Maintenance",
+                    "B) Preventative Maintenance",
+                    "C) Diagnostic Analytics",
+                    "D) Sudden Failure Prevention"
+                ],
+                correct: 1
+            },
+            {
+                question: "30. In a Preventative Maintenance program, system interventions are scheduled based on theoretical expectations of:",
+                options: [
+                    "A) When the market value of the output changes",
+                    "B) When a failure would otherwise be expected to occur",
+                    "C) When operators take their scheduled rest breaks",
+                    "D) When the liquid lubricant transitions into a semi-solid state"
+                ],
+                correct: 1
+            },
+            {
+                question: "31. Which methodology utilizes historical asset data and advanced algorithms to model machine behavior in real-time?",
+                options: [
+                    "A) Reactive Maintenance",
+                    "B) Preventative Maintenance",
+                    "C) Predictive Maintenance",
+                    "D) Gradual Failure Calibration"
+                ],
+                correct: 2
+            },
+            {
+                question: "32. Predictive maintenance depends heavily on streaming real-time information from machines that are:",
+                options: [
+                    "A) Completely disconnected from communication protocols",
+                    "B) IoT-connected (Internet of Things) via sensors",
+                    "C) Kept as standby units without active structural loads",
+                    "D) Suffering from severe, unaddressed sudden failure states"
+                ],
+                correct: 1
+            },
+            {
+                question: "33. What is a key operational advantage of predictive maintenance over traditional time-based preventive maintenance?",
+                options: [
+                    "A) It completely eliminates the need for any liquid or solid lubrication",
+                    "B) Maintenance tasks do not happen unnecessarily, avoiding replacing perfectly good parts",
+                    "C) It allows assets to run to complete failure before intervention",
+                    "D) It operates without requiring any data algorithms or processing power"
+                ],
+                correct: 1
+            },
+            {
+                question: "34. Automotive gear oils, industrial bearing oils, and compressor oils belong to which fluid category?",
+                options: [
+                    "A) Semi-solid lubricants",
+                    "B) Liquid lubricants / Lubricating Oils",
+                    "C) Solid structural lubricants",
+                    "D) Volatile gaseous fluids"
+                ],
+                correct: 1
+            },
+            {
+                question: "35. High-viscosity industrial greases are classified under which lubricant classification?",
+                options: [
+                    "A) Liquid lubricants",
+                    "B) Solid lubricants",
+                    "C) Semi-solid lubricants",
+                    "D) Hydrocarbon gases"
+                ],
+                correct: 2
+            },
+            {
+                question: "36. Materials such as PTFE (Teflon), graphite, and molybdenum disulfide are technically utilized as:",
+                options: [
+                    "A) Low-viscosity rapid flow winter oils",
+                    "B) Multi-purpose fluid semi-solids",
+                    "C) Solid lubricants, typically for extreme temperatures or vacuum conditions",
+                    "D) Gaseous cooling diagnostic agents"
+                ],
+                correct: 2
+            },
+            {
+                question: "37. Viscosity is scientifically defined as the fundamental measurement of a fluid's:",
+                options: [
+                    "A) Ignition point under atmospheric pressure",
+                    "B) Resistance to flow",
+                    "C) Evaporation velocity into surrounding air",
+                    "D) Total density change per degree Celsius"
+                ],
+                correct: 1
+            },
+            {
+                question: "38. An oil that is very thin and pours with absolute ease is characterized as having:",
+                options: [
+                    "A) Exceptionally high viscosity",
+                    "B) Low viscosity",
+                    "C) Unstable flash points",
+                    "D) Critical pour point freezing parameters"
+                ],
+                correct: 1
+            },
+            {
+                question: "39. What is the technical risk if an engineer selects a lubricating oil with a viscosity that is too low for a heavy load?",
+                options: [
+                    "A) The oil layer will become too thick, causing excessive drag friction",
+                    "B) The protective lubricating film cannot be maintained, causing metal-to-metal contact",
+                    "C) The liquid will permanently turn into a semi-solid grease formulation",
+                    "D) The fluid index will cause an immediate transformation into sudden failure"
+                ],
+                correct: 1
+            },
+            {
+                question: "40. The flash point is the lowest temperature at which a volatile substance evaporates to form:",
+                options: [
+                    "A) A thick protective polymer coating on gear surfaces",
+                    "B) An ignitable mixture with air in the presence of an open flame",
+                    "C) A highly stable, crystal-clear non-flammable cooling fluid",
+                    "D) A high-viscosity solid boundary film layer"
+                ],
+                correct: 1
+            },
+            {
+                question: "41. What distinguishes the flash point from other high-temperature oil characteristics?",
+                options: [
+                    "A) The fluid completely freezes into solid graphite instantly",
+                    "B) A brief flash of flame occurs when an ignition source is introduced, but burning does not continue",
+                    "C) The fluid stops flowing entirely and loses all physical viscosity",
+                    "D) It occurs only when operators make a technical forgetfulness error"
+                ],
+                correct: 1
+            },
+            {
+                question: "42. Knowing the precise flash point of an industrial lubricant is crucial for evaluating:",
+                options: [
+                    "A) Fluid behavior and flow capabilities in sub-zero winter temperatures",
+                    "B) Operational safety, flammability risk, and fire hazards in high-temperature environments",
+                    "C) The rate of mechanical misalignment in high-speed rotating shafts",
+                    "D) The number of credit hours needed to complete standard workshop inspections"
+                ],
+                correct: 1
+            }
+        ];
 
-    <script src="script.js"></script>
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let canAnswer = true;
+
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const questionTextElement = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const questionNumberElement = document.getElementById('question-number');
+        const scoreCounterElement = document.getElementById('score-counter');
+        const finalScoreElement = document.getElementById('final-score');
+        const resultFeedbackElement = document.getElementById('result-feedback');
+
+        function startQuiz() {
+            welcomeScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            canAnswer = true;
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            questionNumberElement.innerText = `السؤال ${currentQuestionIndex + 1} من ${quizData.length}`;
+            scoreCounterElement.innerText = `النقاط: ${score}`;
+            
+            questionTextElement.innerText = currentQuestion.question;
+            
+            optionsContainer.innerHTML = '';
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('option-btn');
+                button.addEventListener('click', () => selectOption(index, button));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedButton) {
+            if (!canAnswer) return;
+            canAnswer = false;
+
+            const currentIndex = quizData[currentQuestionIndex].correct;
+            const allButtons = optionsContainer.querySelectorAll('.option-btn');
+
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === currentIndex) {
+                selectedButton.classList.add('correct');
+                score++;
+                scoreCounterElement.innerText = `النقاط: ${score}`;
+            } else {
+                selectedButton.classList.add('wrong');
+                allButtons[currentIndex].classList.add('correct');
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1500);
+        }
+
+        function showResults() {
+            quizScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            
+            finalScoreElement.innerText = `${score} / ${quizData.length}`;
+            
+            if (score === quizData.length) {
+                resultFeedbackElement.innerText = "أنت مرجع هندسي متكامل للمصانع والمنشآت الصناعية! علامة كاملة 42/42. تملك وعياً مطلقاً بالصيانة الذكية، ديناميكا الزيوت، واحتياطات السلامة الحرارية والأمن الصناعي.";
+            } else if (score >= quizData.length * 0.8) {
+                resultFeedbackElement.innerText = "أداء مذهل واستثنائي! استيعابك ممتاز للفروق الفنية الدقيقة بين نقطة الوميض (Flash point) ومخاطر التشغيل الآمن في البيئات القاسية.";
+            } else if (score >= quizData.length / 2) {
+                resultFeedbackElement.innerText = "رائع جداً! لقد نجحت في إنهاء الكويز العملاق، ولديك معرفة فنية قوية تحميك وتحمي المعدات داخل ورش الإنتاج.";
+            } else {
+                resultFeedbackElement.innerText = "محاولة طيبة، يُنصح بمراجعة معايير السلامة الحرارية للزيوت وكيفية تبخر المواد عند درجات الحرارة المرتفعة، ثم إعادة المحاولة لتحسين تقييمك النهائي.";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            resultScreen.classList.remove('active');
+            welcomeScreen.classList.add('active');
+        }
+    </script>
 </body>
 </html>
